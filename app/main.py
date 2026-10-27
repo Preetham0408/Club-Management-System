@@ -1,42 +1,77 @@
 import streamlit as st
-from database import get_connection
+from auth import init_session, login_student, login_head, login_admin, logout, require_role
+from constants import SESSION_LOGGED_IN, SESSION_ROLE, SESSION_USER_NAME
 
-st.title("🎓 Campus Club & Event Management System")
+st.set_page_config(page_title="Club Management System", layout="wide")
 
-# Simple Role Selection & ID Login based
-role = st.sidebar.selectbox("Select Role", ["Student", "Club Manager / Head", "Admin"])
-user_id = st.sidebar.text_input("Enter ID Number (e.g., CS25B1024 or Admin ID)")
+init_session()
 
-if user_id:
-    conn = get_connection()
-    cursor = conn.cursor()
+# If already logged in, show home page
+if st.session_state[SESSION_LOGGED_IN]:
+    st.title(f"🎓 Welcome, {st.session_state[SESSION_USER_NAME]}!")
+    st.info(f"**Role:** {st.session_state[SESSION_ROLE].upper()}")
     
-    if role == "Student":
-        cursor.execute("SELECT * FROM Student WHERE student_id = %s;", (user_id,))
-        user = cursor.fetchone()
-        if user:
-            st.success(f"Welcome, {user[1]} ({user[3]})!")
-            st.info("Navigate to student features: View Club Statistics, Apply for Recruitment, Register for Events.")
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.session_state[SESSION_ROLE] == 'student':
+            st.write("""
+            ### Student Features (see left sidebar)
+            - Browse and register for events
+            - Apply for club recruitment
+            - View club statistics
+            """)
+        elif st.session_state[SESSION_ROLE] == 'head':
+            st.write("""
+            ### Club Head Features (see left sidebar)
+            - Manage club members
+            - Post recruitment drives
+            - Create and manage events
+            """)
+        elif st.session_state[SESSION_ROLE] == 'admin':
+            st.write("""
+            ### Admin Features (see left sidebar)
+            - Create and manage clubs
+            - Assign club heads
+            - Oversee system operations
+            """)
+    
+    with col2:
+        if st.button("🚪 Logout", key="main_logout"):
+            logout()
+            st.rerun()
+else:
+    # Login form
+    st.title("🎓 Campus Club & Event Management System")
+    
+    role = st.selectbox("Select your role:", 
+                        ["Student", "Club Head", "Admin"],
+                        key="login_role")
+    user_id = st.text_input("Enter your ID:", key="login_id")
+    
+    if st.button("Login"):
+        success = False
+        if role == "Student":
+            success = login_student(user_id)
+            error_msg = "Student ID not found."
+        elif role == "Club Head":
+            success = login_head(user_id)
+            error_msg = "Either this student ID doesn't exist, or this student is not a club head."
+        elif role == "Admin":
+            success = login_admin(user_id)
+            error_msg = "Admin ID not found."
+        
+        if success:
+            st.success(f"Welcome! Redirecting...")
+            st.rerun()
         else:
-            st.error("Student ID not found!")
-            
-    elif role == "Club Manager / Head":
-        cursor.execute("SELECT * FROM Club_Memberships WHERE student_id = %s AND role = 'Head';", (user_id,))
-        head_check = cursor.fetchone()
-        if head_check:
-            st.success("Club Head Dashboard Active")
-            st.info("Manage club members, post recruitment drives, and organize events.")
-        else:
-            st.error("Access Denied: You are not registered as a Club Head.")
-            
-    elif role == "Admin":
-        cursor.execute("SELECT * FROM Admin WHERE admin_id::text = %s;", (user_id,))
-        admin_check = cursor.fetchone()
-        if admin_check:
-            st.success(f"Welcome Admin: {admin_check[1]}")
-            st.info("Manage clubs, assign heads, and oversee system operations.")
-        else:
-            st.error("Admin ID not found!")
-            
-    cursor.close()
-    conn.close()
+            st.error(error_msg)
+    
+    # Show test credentials
+    with st.expander("📋 Test Credentials (for development)"):
+        st.write("""
+        **Students:** CS25B1019, CS25B1002, CS25B1051, CS25B1047
+        
+        **Club Heads:** CS25B1019 (Developer Club), CS25B1002 (Robotics Club)
+        
+        **Admins:** 1, 2
+        """)

@@ -1,4 +1,8 @@
 __pycache__/
+*.py[cod]
 .streamlit/
-*.pyc
 .vscode/
+.idea/
+.env
+venv/
+.venv/
