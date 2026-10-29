@@ -27,11 +27,11 @@ def get_head_club(student_id):
     )
 
 def get_club_members(club_id):
-    """Return all members (Heads and Members) of a club."""
+    """Return all members of a club, Head first, then Members."""
     return fetch_all(
         "SELECT s.student_id, s.name, cm.role "
         "FROM Student s JOIN Club_Memberships cm ON s.student_id = cm.student_id "
-        "WHERE cm.club_id = %s ORDER BY cm.role DESC, s.name",
+        "WHERE cm.club_id = %s ORDER BY cm.role ASC, s.name",
         (club_id,)
     )
 

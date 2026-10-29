@@ -23,3 +23,8 @@ SESSION_ROLE = 'role'
 SESSION_USER_ID = 'user_id'
 SESSION_USER_NAME = 'user_name'
 SESSION_CLUB_ID = 'head_club_id'  # Only set if role is 'Head'
+
+# ---- Session roles
+SESSION_ROLE_STUDENT = 'student'
+SESSION_ROLE_HEAD = 'head'
+SESSION_ROLE_ADMIN = 'admin'

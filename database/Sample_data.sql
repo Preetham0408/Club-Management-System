@@ -20,7 +20,8 @@ INSERT INTO Club_Memberships (club_id, student_id, role) VALUES
 (1, 'CS25B1019', 'Head'),
 (2, 'CS25B1002', 'Head'),
 (2, 'CS25B1019', 'Member'),
-(2, 'CS25B1051', 'Member');
+(2, 'CS25B1051', 'Member'),
+(2, 'CS25B1047', 'Member');
 
 -- 5. Insert Events
 INSERT INTO Events

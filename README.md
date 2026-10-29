@@ -48,6 +48,8 @@ Club-Management-System/
 │       ├── club_queries.py      # A
 │       ├── recruitment_queries.py  # B
 │       └── event_queries.py     # C
+├── templates/
+│   └──0_Template.py 
 ├── database/
 │   ├── Reset.sql                # A  drops all tables
 │   ├── Schema.sql               # A  frozen after Day 2
