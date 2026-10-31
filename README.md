@@ -1,69 +1,81 @@
 # 🎓 Campus Club & Event Management System
 
-A robust, database-driven web application built for managing college student clubs, recruitment drives, event participation, and membership tracking. Developed as part of the Database Management Systems (DBMS) course project.
+A database-driven web application for managing college clubs, recruitment drives,
+memberships and events. Built for the Database Management Systems (DBMS) course project.
 
----
+## 👥 Team
 
-## 👥 Team Members
-* **Team Size:** 3 Members
-* **Tech Stack:** Python, Streamlit, PostgreSQL (`psycopg2`), Draw.io
+| Member | Module |
+|---|---|
+| A: <your name> | Login & sessions, Admin / Club management, database design, integration |
+| B: <name> | Recruitment & Membership |
+| C: <name> | Events & Analytics |
 
----
+**Tech stack:** Python, Streamlit, PostgreSQL (psycopg2), draw.io
 
-## 🚀 Key Features & Functional Modules
+## 🚀 Modules
 
-1. **User & Role Management Module:**
-   * Secure login routing based on roles: **Admin**, **Club Managers (Heads/Members)**, and **Students**.
-   * Role-based constraints (e.g., a student can head at most one club but be a member of multiple).
+1. **Login & roles:** Admin, Club Head and Student login by ID.
+2. **Club management (Admin):** create, rename and delete clubs; assign or change a club's head.
+3. **Recruitment & membership:** heads post drives and review applications; students apply; selection adds the student as a Member.
+4. **Events & analytics:** heads create and cancel events; students register; statistics per club.
 
-2. **Club Management Module (Admin):**
-   * Create, rename, and delete clubs.
-   * Assign or change single club heads with strict database integrity.
-
-3. **Recruitment & Membership Module:**
-   * Club heads can post recruitment drives, review applications, and manage student selections ('Pending', 'Selected', 'Rejected').
-
-4. **Event Management Module:**
-   * Organize events (Participation or View type), track student registrations, and manage venue details.
-
----
-
-## 📂 Project Structure
+## 📂 Project structure
 
 ```text
 Club-Management-System/
 ├── app/
-│   ├── main.py                  # A  login + home
-│   ├── database.py              # A  connection + helpers (shared)
-│   ├── auth.py                  # A  session + require_role()
-│   ├── constants.py             # A  'Head','Member','Pending',...
-│   ├── pages/                   # Streamlit auto-detects this folder
-│   │   ├── 1_Admin_Clubs.py     # A
-│   │   ├── 2_Recruitment.py     # B  (head view + student view)
-│   │   ├── 3_Members.py         # B
-│   │   ├── 4_Events.py          # C  (head/admin view + student view)
-│   │   └── 5_Club_Stats.py      # C
-│   └── queries/                 # SQL kept out of UI code
-│       ├── common.py            # A  shared lookups
-│       ├── club_queries.py      # A
-│       ├── recruitment_queries.py  # B
-│       └── event_queries.py     # C
-├── templates/
-│   └──0_Template.py 
+│   ├── main.py                    # login + home            (A)
+│   ├── database.py                # connection + helpers    (A)
+│   ├── auth.py                    # session + require_role  (A)
+│   ├── constants.py               # shared constants        (A)
+│   ├── pages/
+│   │   ├── 1_Admin_Clubs.py       # (A)
+│   │   ├── 2_Recruitment.py       # (B)
+│   │   ├── 3_Members.py           # (B)
+│   │   ├── 4_Events.py            # (C)
+│   │   └── 5_Club_Stats.py        # (C)
+│   ├── queries/                   # all SQL used by the app
+│   │   ├── common.py              # shared lookups          (A)
+│   │   ├── club_queries.py        # (A)
+│   │   ├── recruitment_queries.py # (B)
+│   │   └── event_queries.py       # (C)
+│   └── templates/page_template.py # starting point for a new page
 ├── database/
-│   ├── Reset.sql                # A  drops all tables
-│   ├── Schema.sql               # A  frozen after Day 2
-│   ├── Sample_data.sql          # A  core data only
-│   ├── Seed_recruitment.sql     # B
-│   ├── Seed_events.sql          # C
-│   ├── Views.sql                # C
-│   └── queries/                 # demo queries for viva
-│       ├── admin_demo.sql       # A
-│       ├── recruitment_demo.sql # B
-│       └── events_demo.sql      # C
-├── docs/
-│   ├── sections/                # A_*.md, B_*.md, C_*.md
-│   ├── Report.docx              # A only, at the end
-│   └── DBS_Project_Instructions.pdf
-├── assets/                      # ER + relational diagrams (A)
+│   ├── Reset.sql  Schema.sql  Sample_data.sql  setup_all.sql   (A)
+│   ├── Seed_recruitment.sql       # (B)
+│   ├── Seed_events.sql  Views.sql # (C)
+│   └── queries/                   # demo queries for viva: admin_demo.sql, recruitment_demo.sql, events_demo.sql
+├── docs/                          # project instructions + report sections
+├── assets/                        # ER diagram + relational schema
 ├── .env.example  .gitignore  requirements.txt  README.md
+```
+
+## ⚙️ How to run
+
+1. Install Python 3.10+, PostgreSQL and Git.
+2. Clone the repo and open it in a terminal.
+3. Create the virtual environment and install packages:
+   ```
+   python -m venv venv
+   venv\Scripts\activate          (Windows)   |   source venv/bin/activate   (Mac/Linux)
+   pip install -r requirements.txt
+   ```
+4. Copy `.env.example` to `.env` and put your PostgreSQL password in `DB_PASSWORD`.
+5. Build the database (run from the repo root):
+   ```
+   psql -U postgres -c "CREATE DATABASE club_management;"
+   psql -U postgres -d club_management -v ON_ERROR_STOP=1 -f database/setup_all.sql
+   ```
+6. Start the app: `streamlit run app/main.py`
+
+**Test logins:** Student `CS25B1019` · Club Head `CS25B1002` · Admin `1`
+
+## 📜 Business rules
+
+- A club head is also a student. One head per club, one club per head (enforced by the database).
+- A member is a student with a `Club_Memberships` row.
+- Selecting an application adds the student as a Member in the same transaction.
+- Events are never deleted; cancelling sets `status = 'Cancelled'`.
+- Deleting a club (Admin only) also deletes its memberships, events, drives and applications.
+- Login uses only the ID, with no password. This is a deliberate simplification for the course project.
