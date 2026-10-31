@@ -7,9 +7,9 @@ memberships and events. Built for the Database Management Systems (DBMS) course 
 
 | Member | Module |
 |---|---|
-| A: <your name> | Login & sessions, Admin / Club management, database design, integration |
-| B: <name> | Recruitment & Membership |
-| C: <name> | Events & Analytics |
+| A: G Preetham Chowdary | Login & sessions, Admin / Club management, database design, integration |
+| B: M Mukesh | Recruitment & Membership |
+| C: P Abhishek Reddy | Events & Analytics |
 
 **Tech stack:** Python, Streamlit, PostgreSQL (psycopg2), draw.io
 
