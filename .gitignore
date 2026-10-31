@@ -7,4 +7,5 @@ __pycache__/
 venv/
 .venv/
 .DS_Store
-~$*.docx
+~$*.docxclub_management_backup.sql
+/club_management_backup.sql
