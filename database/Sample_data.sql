@@ -7,7 +7,13 @@ INSERT INTO Admin (name, email, office_number) VALUES
 INSERT INTO Student (student_id, name, email_id, department) VALUES
 ('CS25B1019', 'Nandha Gopal', 'cs25b1019@iiitdm.ac.in', 'CSE'),
 ('CS25B1002', 'Himasesha', 'cs25b1002@iiitdm.ac.in', 'ECE'),
-('CS25B1051', 'Abhishek', 'cs25b1051@iiitdm.ac.in', 'Mechanical'),
+('CS25B1051', 'Rohith', 'cs25b1051@iiitdm.ac.in', 'Mechanical'),
+('CS25B1024', 'Preetham', 'cs25b1024@iiitdm.ac.in', 'Mechanical'),
+('CS25B1026', 'Vilakshan', 'cs25b1026@iiitdm.ac.in', 'ECE'),
+('CS25B1042', 'Abhishek', 'cs25b1042@iiitdm.ac.in', 'CSE'),
+('CS25B1058', 'John', 'cs25b1058@iiitdm.ac.in', 'CSE'),
+('CS25B1014', 'Guru', 'cs25b1014@iiitdm.ac.in', 'CSE'),
+('CS25B1068', 'Teja', 'cs25b1068@iiitdm.ac.in', 'CSE'),
 ('CS25B1047', 'Mukesh', 'cs25b1047@iiitdm.ac.in', 'CSE');
 
 -- 3. Insert Clubs
