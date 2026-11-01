@@ -47,3 +47,20 @@ def get_club_head(club_id):
 def student_exists(student_id):
     """Check if a student exists."""
     return fetch_one("SELECT 1 FROM Student WHERE student_id = %s", (student_id,)) is not None
+
+def get_demo_accounts():
+    """A few real accounts for the 'Demo accounts' buttons on the login page."""
+    return {
+        "admins": fetch_all("SELECT admin_id AS id, name FROM Admin ORDER BY admin_id LIMIT 2"),
+        "heads": fetch_all(
+            "SELECT s.student_id AS id, s.name, c.club_name "
+            "FROM Student s "
+            "JOIN Club_Memberships cm ON cm.student_id = s.student_id AND cm.role = 'Head' "
+            "JOIN Club c ON c.club_id = cm.club_id "
+            "ORDER BY c.club_name LIMIT 3"),
+        "students": fetch_all(
+            "SELECT s.student_id AS id, s.name FROM Student s "
+            "WHERE NOT EXISTS (SELECT 1 FROM Club_Memberships cm "
+            "                  WHERE cm.student_id = s.student_id AND cm.role = 'Head') "
+            "ORDER BY s.student_id LIMIT 3"),
+    }

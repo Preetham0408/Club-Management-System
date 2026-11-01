@@ -28,3 +28,10 @@ SESSION_CLUB_ID = 'head_club_id'  # Only set if role is 'Head'
 SESSION_ROLE_STUDENT = 'student'
 SESSION_ROLE_HEAD = 'head'
 SESSION_ROLE_ADMIN = 'admin'
+
+
+# ---- Login screen
+SHOW_DEMO_LOGINS = True   # set to False before the final submission
+LOGIN_STUDENT = 'Student'
+LOGIN_HEAD = 'Club Head'
+LOGIN_ADMIN = 'Admin'

@@ -47,3 +47,11 @@ def run_transaction(statements):
                     cur.execute(sql, params)
     finally:
         conn.close()
+
+def is_database_available():
+    """True if we can connect to PostgreSQL (used by the login page to show a friendly error)."""
+    try:
+        get_connection().close()
+        return True
+    except psycopg2.OperationalError:
+        return False
