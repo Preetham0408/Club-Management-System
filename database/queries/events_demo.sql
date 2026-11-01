@@ -1,4 +1,3 @@
-
 -- Owner: C
 -- Events and Analytics SQL Demonstrations
 
@@ -147,3 +146,102 @@ ROLLBACK;
 SELECT *
 FROM club_event_summary
 ORDER BY club_name;
+
+-- ==========================================
+-- 9. EVENTS A STUDENT CAN REGISTER FOR
+-- Concepts: JOIN, WHERE, NOT EXISTS subquery
+-- Used by get_registrable_events(student_id) = the Register tab
+-- ==========================================
+
+SELECT
+    e.event_id,
+    c.club_name,
+    e.name,
+    e.event_date,
+    e.venue
+FROM Events e
+JOIN Club c ON c.club_id = e.club_id
+WHERE e.type = 'Participation'
+  AND e.status = 'Scheduled'
+  AND e.event_date > CURRENT_TIMESTAMP
+  AND NOT EXISTS (
+      SELECT 1
+      FROM Event_Participation ep
+      WHERE ep.event_id = e.event_id
+        AND ep.student_id = 'CS25B1042'
+  )
+ORDER BY e.event_date;
+
+
+-- ==========================================
+-- 10. EVERY EVENT OF ONE CLUB WITH ITS REGISTRATION COUNT
+-- Concepts: LEFT JOIN, COUNT, GROUP BY, subquery
+-- Used by get_club_events(club_id) = the Manage events tab
+-- Tech Showcase must show 0, not disappear
+-- ==========================================
+
+SELECT
+    e.event_id,
+    e.name,
+    e.event_date,
+    e.venue,
+    e.type,
+    e.status,
+    COUNT(ep.participation_id) AS registrations
+FROM Events e
+LEFT JOIN Event_Participation ep
+    ON ep.event_id = e.event_id
+WHERE e.club_id = (
+    SELECT club_id
+    FROM Club
+    WHERE club_name = 'Developer Club'
+)
+GROUP BY e.event_id, e.name, e.event_date, e.venue, e.type, e.status
+ORDER BY e.event_date DESC;
+
+
+-- ==========================================
+-- 11. EVENTS ONE STUDENT REGISTERED FOR
+-- Concepts: JOIN of three tables, WHERE, ORDER BY
+-- Used by get_my_events(student_id) = the My events tab
+-- ==========================================
+
+SELECT
+    e.event_id,
+    e.name,
+    c.club_name,
+    e.event_date,
+    e.venue,
+    e.type,
+    e.status,
+    ep.registered_at,
+    e.event_date > CURRENT_TIMESTAMP AS is_upcoming
+FROM Event_Participation ep
+JOIN Events e ON e.event_id = ep.event_id
+JOIN Club c ON c.club_id = e.club_id
+WHERE ep.student_id = 'CS25B1051'
+ORDER BY e.event_date;
+
+
+-- ==========================================
+-- 12. STUDENTS REGISTERED FOR ONE EVENT
+-- Concepts: JOIN, WHERE, ORDER BY
+-- Used by get_event_participants(event_id)
+-- ==========================================
+
+SELECT
+    s.student_id,
+    s.name,
+    s.email_id,
+    s.department,
+    ep.registered_at
+FROM Event_Participation ep
+JOIN Student s ON s.student_id = ep.student_id
+WHERE ep.event_id = (
+    SELECT e.event_id
+    FROM Events e
+    JOIN Club c ON c.club_id = e.club_id
+    WHERE e.name = 'CodeSprint 2026'
+      AND c.club_name = 'Developer Club'
+)
+ORDER BY s.name;
