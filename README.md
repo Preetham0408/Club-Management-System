@@ -69,7 +69,7 @@ Club-Management-System/
    ```
 6. Start the app: `streamlit run app/main.py`
 
-**Test logins:** Student `CS25B1019` · Club Head `CS25B1002` · Admin `1`
+**Test logins:** Student `CS25B1024` · Club Head `CS25B1002` · Admin `1`
 
 ## 📜 Business rules
 
@@ -79,3 +79,5 @@ Club-Management-System/
 - Events are never deleted; cancelling sets `status = 'Cancelled'`.
 - Deleting a club (Admin only) also deletes its memberships, events, drives and applications.
 - Login uses only the ID, with no password. This is a deliberate simplification for the course project.
+- The Admin can view open recruitment drives (read-only).
+- Every logged-in user can view the members of any club. Only the club head can remove members from their own club.
