@@ -31,7 +31,7 @@ SESSION_ROLE_ADMIN = 'admin'
 
 
 # ---- Login screen
-SHOW_DEMO_LOGINS = True   # set to False before the final submission
+SHOW_DEMO_LOGINS = False
 LOGIN_STUDENT = 'Student'
 LOGIN_HEAD = 'Club Head'
 LOGIN_ADMIN = 'Admin'

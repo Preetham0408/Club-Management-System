@@ -32,5 +32,3 @@ INSERT, UPDATE, DELETE, transactions, ON CONFLICT, and constraint violation test
 | 7 | Delete without confirmation | Press delete, box unticked | Error, club still exists | |
 | 8 | Delete with confirmation | Tick box, delete | Club gone; its members, events and drives gone | |
 | 9 | Role protection | Log in as Student and open the Admin page | "Your role cannot open this page." | |
-
-(Add 2 screenshots: Overview tab and Change head tab.)
