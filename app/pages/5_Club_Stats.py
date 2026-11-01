@@ -1,137 +1,38 @@
 import streamlit as st
-
 from auth import require_role
-from constants import (
-    SESSION_ROLE_ADMIN,
-    SESSION_ROLE_STUDENT,
-    SESSION_ROLE_HEAD,
-)
-
+from constants import SESSION_ROLE_STUDENT, SESSION_ROLE_HEAD, SESSION_ROLE_ADMIN
 from queries.event_queries import get_club_stats
 
+require_role([SESSION_ROLE_STUDENT, SESSION_ROLE_HEAD, SESSION_ROLE_ADMIN])
+st.title("📊 Club statistics")
+st.caption("Events and registrations of every club. This page is read-only and open to everyone who is logged in.")
 
-# --------------------------------------------------
-# AUTHENTICATION
-# --------------------------------------------------
-
-require_role([
-    SESSION_ROLE_STUDENT,
-    SESSION_ROLE_HEAD,
-    SESSION_ROLE_ADMIN,
-])
-
-
-# --------------------------------------------------
-# CLUB STATISTICS
-# --------------------------------------------------
-
-st.title("Club Statistics")
-
-st.write(
-    "View event statistics and participation details "
-    "for all registered clubs."
-)
-
-stats = get_club_stats()
-
-
+stats = [dict(row) for row in get_club_stats()]
 if not stats:
-    st.info("No club statistics are available yet.")
+    st.info("There are no clubs yet, so there are no statistics.")
+    st.stop()
 
-else:
+# ---------------- Totals ----------------
+c1, c2, c3 = st.columns(3)
+c1.metric("Clubs", len(stats))
+c2.metric("Events", sum(row["total_events"] for row in stats))
+c3.metric("Registrations", sum(row["total_registrations"] for row in stats))
 
-    # Convert database rows into dictionaries
-    stats_data = [dict(row) for row in stats]
+# ---------------- Table (read from the view club_event_summary) ----------------
+st.subheader("Club-wise statistics")
+columns = {
+    "club_name": st.column_config.TextColumn("Club"),
+    "total_events": st.column_config.NumberColumn("Events"),
+    "total_registrations": st.column_config.NumberColumn("Registrations"),
+}
+st.dataframe(stats, hide_index=True, column_config=columns, column_order=list(columns))
 
-    st.header("Statistics Overview")
-
-    # Total events across all clubs
-    total_events = sum(
-        row["total_events"] for row in stats_data
-    )
-
-    # Total registrations across all clubs
-    total_registrations = sum(
-        row["total_registrations"] for row in stats_data
-    )
-
-    # Number of clubs
-    total_clubs = len(stats_data)
-
-    # Summary metrics
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.metric(
-            label="Total Clubs",
-            value=total_clubs,
-        )
-
-    with col2:
-        st.metric(
-            label="Total Events",
-            value=total_events,
-        )
-
-    with col3:
-        st.metric(
-            label="Total Registrations",
-            value=total_registrations,
-        )
-
-    # --------------------------------------------------
-    # STATISTICS TABLE
-    # --------------------------------------------------
-
-    st.divider()
-
-    st.subheader("Club-wise Statistics")
-
-    st.dataframe(
-        stats_data,
-        use_container_width=True,
-        hide_index=True,
-    )
-
-    # --------------------------------------------------
-    # REGISTRATIONS BAR CHART
-    # --------------------------------------------------
-
-    st.divider()
-
-    st.subheader("Event Registrations by Club")
-
-    chart_data = {
-        row["club_name"]: row["total_registrations"]
-        for row in stats_data
-    }
-
-    st.bar_chart(chart_data)
-
-    # --------------------------------------------------
-    # EVENT COUNT CHART
-    # --------------------------------------------------
-
-    st.divider()
-
-    st.subheader("Total Events by Club")
-
-    event_chart_data = {
-        row["club_name"]: row["total_events"]
-        for row in stats_data
-    }
-
-    st.bar_chart(event_chart_data)
-
-
-# --------------------------------------------------
-# READ-ONLY INFORMATION
-# --------------------------------------------------
-
-st.divider()
-
-st.info(
-    "Club statistics are read-only. "
-    "Students, Club Heads, and Administrators "
-    "can view these statistics."
-)
+# ---------------- Charts ----------------
+st.subheader("Charts")
+left, right = st.columns(2)
+with left:
+    st.caption("Registrations per club")
+    st.bar_chart(stats, x="club_name", y="total_registrations")
+with right:
+    st.caption("Events per club")
+    st.bar_chart(stats, x="club_name", y="total_events")
