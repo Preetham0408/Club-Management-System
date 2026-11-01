@@ -3,8 +3,8 @@ from database import fetch_one
 from constants import (
     SESSION_LOGGED_IN, SESSION_ROLE, SESSION_USER_ID, SESSION_USER_NAME, SESSION_CLUB_ID,
     SESSION_ROLE_STUDENT, SESSION_ROLE_HEAD, SESSION_ROLE_ADMIN, ROLE_HEAD,
+    LOGIN_STUDENT, LOGIN_HEAD,
 )
-
 DEFAULTS = {
     SESSION_LOGGED_IN: False,
     SESSION_ROLE: None,
@@ -66,3 +66,20 @@ def login_admin(admin_id):
 def logout():
     for key in DEFAULTS:
         st.session_state.pop(key, None)
+
+def login(role_choice, raw_id):
+    """Used by the login page. Returns (True, "") or (False, "message to show")."""
+    raw_id = (raw_id or "").strip()
+    if not raw_id:
+        return False, "Please enter your ID."
+    if role_choice == LOGIN_STUDENT:
+        ok = login_student(raw_id.upper())
+        msg = "Student ID not found."
+    elif role_choice == LOGIN_HEAD:
+        ok = login_head(raw_id.upper())
+        msg = "This ID is not a club head (or does not exist)."
+    else:
+        # isascii() + length check: stops "²" or a 30-digit number from crashing the query
+        ok = raw_id.isascii() and raw_id.isdigit() and len(raw_id) <= 9 and login_admin(int(raw_id))
+        msg = "Admin ID must be a number that exists (for example 1)."
+    return (True, "") if ok else (False, msg)

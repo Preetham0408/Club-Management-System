@@ -147,3 +147,29 @@ def delete_club(club_id):
     except psycopg2.Error as e:
         return _db_error(e)
     return True, f"Club '{club['club_name']}' and all its related data were deleted."
+
+
+# ---------- Dashboard numbers for the Home page ----------
+
+def get_head_dashboard(club_id):
+    """Counts for a club head's home page (scalar subqueries)."""
+    return fetch_one(
+        "SELECT (SELECT COUNT(*) FROM Club_Memberships WHERE club_id = %s) AS members, "
+        "       (SELECT COUNT(*) FROM Recruitment WHERE club_id = %s AND ends_on >= CURRENT_DATE) AS open_drives, "
+        "       (SELECT COUNT(*) FROM Applications a JOIN Recruitment r ON r.rec_id = a.rec_id "
+        "         WHERE r.club_id = %s AND a.status = %s) AS pending_applications, "
+        "       (SELECT COUNT(*) FROM Events WHERE club_id = %s AND status = %s "
+        "         AND event_date > CURRENT_TIMESTAMP) AS upcoming_events",
+        (club_id, club_id, club_id, STATUS_PENDING, club_id, EVENT_SCHEDULED),
+    )
+
+
+def get_student_dashboard(student_id):
+    """Counts for a student's home page."""
+    return fetch_one(
+        "SELECT (SELECT COUNT(*) FROM Club_Memberships WHERE student_id = %s) AS my_clubs, "
+        "       (SELECT COUNT(*) FROM Applications WHERE student_id = %s AND status = %s) AS pending_applications, "
+        "       (SELECT COUNT(*) FROM Event_Participation ep JOIN Events e ON e.event_id = ep.event_id "
+        "         WHERE ep.student_id = %s AND e.status = %s AND e.event_date > CURRENT_TIMESTAMP) AS upcoming_registrations",
+        (student_id, student_id, STATUS_PENDING, student_id, EVENT_SCHEDULED),
+    )

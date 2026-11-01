@@ -1,41 +1,43 @@
+# Router: decides which pages the logged-in user can see.
 import streamlit as st
-from auth import init_session, login_student, login_head, login_admin, logout
-from constants import SESSION_LOGGED_IN, SESSION_ROLE, SESSION_USER_NAME
+from auth import init_session
+from constants import SESSION_LOGGED_IN, SESSION_ROLE, SESSION_ROLE_ADMIN
+from ui import inject_css, render_sidebar_user
 
-st.set_page_config(page_title="Club Management System", layout="wide")
+st.set_page_config(page_title="Campus Club Hub", page_icon="🎓", layout="wide")
 init_session()
+inject_css()
 
-if st.session_state[SESSION_LOGGED_IN]:
-    st.title(f"🎓 Welcome, {st.session_state[SESSION_USER_NAME]}!")
-    st.info(f"Logged in as: {st.session_state[SESSION_ROLE]}")
-    st.write("Use the left sidebar to open the pages for your role.")
-    if st.button("🚪 Logout"):
-        logout()
-        st.rerun()
+logged_in = st.session_state[SESSION_LOGGED_IN]
+
+if not logged_in:
+    # Not logged in: the only page is the login page
+    navigation = st.navigation([st.Page("login.py", title="Login", icon="🔐")])
 else:
-    st.title("🎓 Campus Club & Event Management System")
-    role_choice = st.selectbox("Select your role:", ["Student", "Club Head", "Admin"], key="login_role")
-    user_id = st.text_input("Enter your ID:", key="login_id").strip()
+    home = st.Page("home.py", title="Home", icon="🏠", default=True)
+    recruitment = st.Page("pages/2_Recruitment.py", title="Recruitment", icon="📝")
+    members = st.Page("pages/3_Members.py", title="Club Members", icon="👥")
+    events = st.Page("pages/4_Events.py", title="Events", icon="📅")
+    stats = st.Page("pages/5_Club_Stats.py", title="Club Statistics", icon="📊")
 
-    if st.button("Login"):
-        if role_choice == "Student":
-            ok = login_student(user_id.upper())
-            msg = "Student ID not found."
-        elif role_choice == "Club Head":
-            ok = login_head(user_id.upper())
-            msg = "This ID is not a club head (or does not exist)."
-        else:
-            ok = user_id.isdigit() and login_admin(int(user_id))
-            msg = "Admin ID must be a number that exists (e.g. 1)."
+    if st.session_state[SESSION_ROLE] == SESSION_ROLE_ADMIN:
+        admin_clubs = st.Page("pages/1_Admin_Clubs.py", title="Manage clubs", icon="🛠️")
+        menu = {
+            "Main": [home],
+            "Administration": [admin_clubs],
+            "Browse": [recruitment, members, events, stats],
+        }
+    else:
+        menu = {
+            "Main": [home],
+            "Clubs": [recruitment, members],
+            "Events": [events, stats],
+        }
+    navigation = st.navigation(menu)
 
-        if ok:
-            st.rerun()
-        else:
-            st.error(msg)
+# IMPORTANT: draw the sidebar user card AFTER st.navigation() has chosen the page.
+# If a button is created before it, its id changes after login and the first click is lost.
+if logged_in:
+    render_sidebar_user()
 
-    with st.expander("📋 Test credentials (remove before final submission)"):
-        st.write("""
-        **Students:** CS25B1019, CS25B1002, CS25B1051, CS25B1047
-        **Club Heads:** CS25B1019 (Developer Club), CS25B1002 (Robotics Club)
-        **Admins:** 1, 2
-        """)
+navigation.run()
