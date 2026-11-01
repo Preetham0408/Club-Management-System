@@ -3,14 +3,14 @@ from datetime import date, timedelta
 from auth import require_role
 from constants import (
     SESSION_ROLE, SESSION_USER_ID, SESSION_CLUB_ID,
-    SESSION_ROLE_STUDENT, SESSION_ROLE_HEAD, STATUS_PENDING,
+    SESSION_ROLE_STUDENT, SESSION_ROLE_HEAD, SESSION_ROLE_ADMIN, STATUS_PENDING,
 )
 from queries.recruitment_queries import (
     get_open_drives, get_club_drives, get_drive_applications, get_my_applications,
     create_drive, apply_to_drive, select_application, reject_application,
 )
 
-require_role([SESSION_ROLE_STUDENT, SESSION_ROLE_HEAD])
+require_role([SESSION_ROLE_STUDENT, SESSION_ROLE_HEAD, SESSION_ROLE_ADMIN])
 st.title("📝 Recruitment")
 
 role = st.session_state[SESSION_ROLE]
@@ -33,24 +33,35 @@ def finish(result):
     st.rerun()
 
 
-# Everyone gets 3 tabs. A club head gets 2 more.
-tab_names = ["📋 Open drives", "📝 Apply", "📄 My applications"]
-if role == SESSION_ROLE_HEAD:
-    tab_names += ["➕ Post drive", "✅ Review applications"]
+# Admin: 1 tab (view only). Student: 3 tabs. Club head: 3 tabs + 2 more.
+if role == SESSION_ROLE_ADMIN:
+    tab_names = ["📋 Open drives"]
+else:
+    tab_names = ["📋 Open drives", "📝 Apply", "📄 My applications"]
+    if role == SESSION_ROLE_HEAD:
+        tab_names += ["➕ Post drive", "✅ Review applications"]
 tabs = st.tabs(tab_names)
 
 drives = get_open_drives()
-my_applications = get_my_applications(user_id)
+# The admin is not a student, so there are no applications to load
+my_applications = [] if role == SESSION_ROLE_ADMIN else get_my_applications(user_id)
 
 # ---------------- Open drives ----------------
 with tabs[0]:
-    c1, c2 = st.columns(2)
-    c1.metric("Open drives", len(drives))
-    c2.metric("My applications", len(my_applications))
+    if role == SESSION_ROLE_ADMIN:
+        st.metric("Open drives", len(drives))
+    else:
+        c1, c2 = st.columns(2)
+        c1.metric("Open drives", len(drives))
+        c2.metric("My applications", len(my_applications))
     if not drives:
         st.info("There are no open recruitment drives right now.")
     else:
         st.dataframe(drives)
+    
+# The admin can only view the drives. Stop here so that the Apply
+if role == SESSION_ROLE_ADMIN:
+    st.stop()
 
 # ---------------- Apply ----------------
 with tabs[1]:
